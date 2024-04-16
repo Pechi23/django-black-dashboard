@@ -1,14 +1,15 @@
 # Core
-django==4.2.9
-python-dotenv==1.0.1
-str2bool==1.1
+django
+python-dotenv
+str2bool
+openpyxl==3.1.2
 
 # UI
-django-admin-black==1.0.8
+django-admin-black
 
 # Deployment
-whitenoise==6.6.0
-gunicorn==21.2.0
+#whitenoise
+#gunicorn
 
 # psycopg2-binary
 # mysqlclient

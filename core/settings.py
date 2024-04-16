@@ -29,9 +29,9 @@ if not SECRET_KEY:
     SECRET_KEY = ''.join(random.choice( string.ascii_lowercase  ) for i in range( 32 ))
 
 # Enable/Disable DEBUG Mode
-DEBUG = str2bool(os.environ.get('DEBUG'))
+#DEBUG = str2bool(os.environ.get('DEBUG'))
 #print(' DEBUG -> ' + str(DEBUG) ) 
-
+DEBUG = True
 # Docker HOST
 ALLOWED_HOSTS = ['*']
 
@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "home",
 ]
 
