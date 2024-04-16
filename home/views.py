@@ -4,13 +4,6 @@ from django.db.models import Sum
 from home.models import *
 from .utils import init,read_futures
 
-# Create your views here.
-'''
-def index(request):
-
-    # Page from the theme 
-    return render(request, 'pages/dashboard.html')
-'''
 
 # Pages -- Dashboard
 def index(request):
