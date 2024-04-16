@@ -7,12 +7,12 @@ services:
     networks:
       - db_network
       - web_network
-  nginx:
-    container_name: nginx
+  django:
+    container_name: django
     restart: always
-    image: "nginx:latest"
+    image: "django:latest"
     ports:
-      - "5085:5085"
+      - "8080:8080"
     volumes:
       - ./nginx:/etc/nginx/conf.d
     networks:
