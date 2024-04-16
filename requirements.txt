@@ -3,12 +3,13 @@ django
 python-dotenv
 str2bool
 openpyxl==3.1.2
+python-dateutil
 
 # UI
 django-admin-black
 
 # Deployment
-#whitenoise
+whitenoise
 #gunicorn
 
 # psycopg2-binary

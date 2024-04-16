@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Sum
 from home.models import *
 from .utils import init,read_futures
+from datetime import datetime 
 
 
 # Pages -- Dashboard
 def index(request):
-    init()
+    #init()
     context = {
     'parent': 'pages',
     'segment': 'dashboard',
@@ -15,14 +17,14 @@ def index(request):
     "players" : Player.objects.all().count(),
     "teams" : Team.objects.all().count(),
     "members" : Member.objects.all().count(),
-    "games" : Game.objects.filter(date__lte=now().date()).count()
+    "games" : Game.objects.filter(played=True).count()
     }
     
     return render(request, 'pages/dashboard.html', context)
 
 @login_required(login_url='/accounts/auth-signin')
 def tables(request):
-    init()
+    #init()
     teams_with_total_stats = Team.objects.annotate(
         total_stats=Sum('member__player__stats__PPI')
     )
@@ -38,13 +40,24 @@ def tables(request):
     return render(request, 'pages/tables.html', context)
   
 @login_required(login_url='/accounts/auth-signin')
-def tables2(request):
-    read_futures()
+def futures(request):
+    #read_futures()
+    
+    all_matches = Game.objects.filter(date__gte=now().date()).order_by('date')
+    paginator = Paginator(all_matches, 10)
+    
+    page = request.GET.get('page', 1)
+
+    try:
+        matches = paginator.page(page)
+    except:
+        matches = paginator.page(1)
     
     context = {
     'parent': 'pages',
-    'segment': 'tables',
-    'matches': Game.objects.filter(date__gte=now().date()),
+    'segment': 'futures',
+    'matches': matches,
+    'page_obj': matches,
   }
-    return render(request, 'pages/tables2.html', context)
+    return render(request, 'pages/futures.html', context)
 

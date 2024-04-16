@@ -88,6 +88,8 @@ class Game(models.Model):
     host = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="host_team")
     guest = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="guest_team",null=True, blank=True)
     
+    played = models.BooleanField(default=False)
+    
     @property
     def chances_host(self):
         fraction =  round((self.host.total + self.guest.total)/2 * 60 / 100, 2)
@@ -101,3 +103,11 @@ class Game(models.Model):
     
     def __str__(self):
         return self.host.name+"-"+self.guest.name+"-"+self.date
+    
+class Updated(models.Model):
+    date = models.DateField(default=now)
+    last_excel_read = models.PositiveIntegerField(default=0)
+        
+    def __str__(self):
+        return self.date
+    

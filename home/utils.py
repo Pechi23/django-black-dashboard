@@ -6,7 +6,7 @@ from datetime import datetime
 from django.utils.timezone import localdate
 
 def init():
-    if Stats.objects.all().count() > 0:
+    if now().date() <= Updated.objects.all().last().date:
         return
       
     '''
@@ -17,18 +17,61 @@ def init():
     Game.objects.all().delete()
     '''
     
-    i = 1
+    i = 0
     while True:
+        i += 1
         file_path = 'matches/'+str(i)+'.xlsx'
         if os.path.exists(file_path) is False:
+            i-=1      
+            read_futures(i)
+            u = Updated(date = now().date(), last_excel_read = i)
+            u.save()
             break
         
         book = load_workbook(file_path)
         sheet = book.active
         
+        host = sheet['C1'].value
+        guest = sheet['D1'].value
+        
+        if i % 2 == 0:
+            current_team_name = guest
+        else:
+            current_team_name = host
+            
+        try:
+            current_team = Team.objects.get(name = current_team_name)
+        except Team.DoesNotExist:
+            newTeam = Team(name = current_team_name)
+            newTeam.save()
+            current_team = newTeam 
+            
+        date = datetime.date(datetime.strptime( sheet['B1'].value, "%Y-%m-%d"))
+        
+        if i % 2 == 0:
+            try:
+                # match = Game.objects.filter(date=date).get(guest=current_team)
+                    
+                match = Game.objects.filter(date=date).get(guest=current_team)
+                if match.played == True:
+                    continue #should I return here???
+                else:
+                    match.played = True
+                    match.save()
+                    continue
+            except Game.DoesNotExist:
+                newMatch = Game(date = date)
+                newMatch.host = Team.objects.get(name = host)
+                newMatch.guest = Team.objects.get(name = guest)
+                newMatch.played = True
+                newMatch.save()
+        
         index = 2
         while sheet['B'+str(index)].value is not None:
             s = Stats()
+            
+            s.team = current_team_name
+            s.date = date
             
             player_name  = sheet['B'+str(index)].value
             try:
@@ -36,26 +79,8 @@ def init():
             except Player.DoesNotExist:
                 newPlayer = Player(name = player_name)
                 newPlayer.save()
-                s.player = newPlayer 
-            
-            
-            host = sheet['C1'].value
-            guest = sheet['D1'].value
-            
-            if i % 2 == 0:
-                s.team = guest
-            else:
-                s.team = host
+                s.player = newPlayer
                 
-            try:
-                current_team = Team.objects.get(name = s.team)
-            except Team.DoesNotExist:
-                newTeam = Team(name = s.team)
-                newTeam.save()
-                current_team = newTeam 
-                
-            s.date = datetime.date(datetime.strptime( sheet['B1'].value, "%Y-%m-%d"))
-            
             try:
                 member = Member.objects.filter(player=s.player).get(team=current_team)
                 if member.date_start > s.date:
@@ -64,17 +89,6 @@ def init():
             except Member.DoesNotExist:
                 newMember = Member(player=s.player, team=current_team, date_start = s.date)
                 newMember.save()
-            
-            
-            
-            if i % 2 == 0:
-                try:
-                    match = Game.objects.filter(date=s.date).get(guest=current_team)
-                except Game.DoesNotExist:
-                    newMatch = Game(date = s.date)
-                    newMatch.host = Team.objects.get(name = host)
-                    newMatch.guest = Team.objects.get(name = guest)
-                    newMatch.save()
             
             s.Pos   = sheet['C'+str(index)].value
             s.Rank  = sheet['D'+str(index)].value
@@ -100,41 +114,48 @@ def init():
             s.SAV   = sheet['X'+str(index)].value
             s.Ca    = sheet['Y'+str(index)].value
             s.KS    = sheet['Z'+str(index)].value
-            s.save()
+            
+            try:
+                exist = Stats.objects.filter(player=s.player).get(date=s.date)
+            except Stats.DoesNotExist:
+                s.save()
             index += 1
-        i += 1
-        
-def read_futures():
-  if Game.objects.filter(date__gte=now().date()) is not None:
-    return 
-  
-  
-  file_path = 'future/future-matches.xlsx'
-  if os.path.exists(file_path) is False:
-    return
-      
-  book = load_workbook(file_path)
-  sheet = book.active
-  
-  index = 1
-  while sheet['B'+str(index)].value is not None:
-    date  = sheet['B'+str(index)].value
     
-    
-    host = sheet['C'+str(index)].value
-    guest = sheet['D'+str(index)].value
-        
     
         
-    date = datetime.date(datetime.strptime( sheet['B'+str(index)].value, "%Y-%m-%d"))
+def read_futures(i=0):
+    #if now().date() <= Updated.objects.all().last().date:
+    #    return 
+
+    file_path = 'future/future-matches.xlsx'
+    if os.path.exists(file_path) is False:
+        return
+        
+    book = load_workbook(file_path)
+    sheet = book.active
     
-    
-    try:
-        match = Game.objects.filter(date=date).get(guest__name=guest)
-    except Game.DoesNotExist:
-        newMatch = Game(date = date)
-        newMatch.host = Team.objects.get(name = host)
-        newMatch.guest = Team.objects.get(name = guest)
-        newMatch.save()
-  
-    index += 1
+    sheet['A1'].value = i
+
+    index = 1
+    while sheet['B'+str(index)].value is not None:
+        date  = sheet['B'+str(index)].value
+        
+        
+        host = sheet['C'+str(index)].value
+        guest = sheet['D'+str(index)].value
+            
+        
+            
+        date = datetime.date(datetime.strptime(sheet['B'+str(index)].value, "%Y-%m-%d"))
+        
+        
+        try:
+            match = Game.objects.filter(date=date).get(guest__name=guest)
+        except Game.DoesNotExist:
+            newMatch = Game(date = date)
+            newMatch.host = Team.objects.get(name = host)
+            newMatch.guest = Team.objects.get(name = guest)
+            newMatch.played = False
+            newMatch.save()
+
+        index += 1

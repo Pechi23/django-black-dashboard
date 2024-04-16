@@ -1,0 +1,60 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card ">
+        <div class="card-header">
+          <h4 class="card-title"> Future Matches </h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table tablesorter " id="">
+              <thead class="text-primary">
+                <tr>
+                  <th scope="col">No.</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Host Win</th>
+                  <th scope="col">Host Team</th>
+                  <th scope="col">Guest Team</th>
+                  <th scope="col">Guest Win</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for match in matches%}
+                <tr>
+                  <th scope="row">{{ forloop.counter }}</th>
+                  <td>{{ match.date }}</td>
+                  {% if match.chances_host > match.chances_guest %}
+                    <td><p class="text-success">{{ match.chances_host }}%</p></td>
+                    <td>{{ match.host }}</td>
+                    <td>{{ match.guest  }}</td>
+                    <td><p class="text-danger">{{ match.chances_guest  }}%</p></td>
+                  {% else %}
+                    <td><p class="text-danger">{{ match.chances_host }}%</p></td>
+                    <td>{{ match.host }}</td>
+                    <td>{{ match.guest  }}</td>
+                    <td><p class="text-success">{{ match.chances_guest  }}%</p></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>  
+  </div>
+  <nav aria-label="Page navigation example">
+    <ul class="pagination d-flex justify-content-center">
+      <li class="page-item"><a class="page-link" href="?page=1">&laquo; first</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+      <li class="page-item"><a class="page-link" >Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a></li>
+    </ul>
+  </nav>
+</div>
+
+{% endblock content %}
