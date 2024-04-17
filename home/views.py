@@ -43,21 +43,20 @@ def tables(request):
 def futures(request):
     #read_futures()
     
-    all_matches = Game.objects.filter(date__gte=now().date()).order_by('date')
+    all_matches = FutureGame.objects.all().order_by('date')
     paginator = Paginator(all_matches, 10)
     
-    page = request.GET.get('page', 1)
-
+    page = request.GET.get("page", 1)
+    
     try:
-        matches = paginator.page(page)
-    except:
-        matches = paginator.page(1)
+        page_obj = paginator.page(page)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
     
     context = {
     'parent': 'pages',
     'segment': 'futures',
-    'matches': matches,
-    'page_obj': matches,
+    'page_obj': page_obj,
   }
     return render(request, 'pages/futures.html', context)
 

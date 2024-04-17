@@ -103,6 +103,26 @@ class Game(models.Model):
     
     def __str__(self):
         return self.host.name+"-"+self.guest.name+"-"+self.date
+
+class FutureGame(models.Model):
+    date = models.DateField()
+    
+    host = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="host_team_future")
+    guest = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="guest_team_future",null=True, blank=True)
+    
+    @property
+    def chances_host(self):
+        fraction =  round((self.host.total + self.guest.total)/2 * 60 / 100, 2)
+        return round( (self.host.total-fraction) / (self.host.total+self.guest.total-fraction*2) * 100, 2)
+    
+    
+    @property
+    def chances_guest(self):
+        fraction =  round((self.host.total + self.guest.total)/2 * 60 / 100, 2)
+        return round( (self.guest.total-fraction) / (self.host.total+self.guest.total-fraction*2) * 100, 2)
+    
+    def __str__(self):
+        return self.host.name+"-"+self.guest.name+"-"+self.date.strftime("%d-%m-%Y")
     
 class Updated(models.Model):
     date = models.DateField(default=now)
