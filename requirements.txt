@@ -10,7 +10,7 @@ django-admin-black
 
 # Deployment
 whitenoise
-#gunicorn
+gunicorn
 
-# psycopg2-binary
+psycopg2-binary
 # mysqlclient

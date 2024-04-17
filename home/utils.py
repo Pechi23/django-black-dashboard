@@ -150,12 +150,17 @@ def read_futures(i=0):
         
         
         try:
-            match = Game.objects.filter(date=date).get(guest__name=guest)
+            match = FutureGame.objects.filter(date=date).get(guest__name=guest)
         except Game.DoesNotExist:
-            newMatch = Game(date = date)
+            newMatch = FutureGame(date = date)
             newMatch.host = Team.objects.get(name = host)
             newMatch.guest = Team.objects.get(name = guest)
             newMatch.played = False
             newMatch.save()
+            
+        for future in FutureGame.objects.all():
+            if future.date < now().date():
+                game = Game(date = future.date, host = future.host, guest = future.guest, played = False)
+                game.save()
 
         index += 1
